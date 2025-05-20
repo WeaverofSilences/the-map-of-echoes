@@ -1,32 +1,46 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>The Map of Echoes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+
+  <!-- STILI CUSTOM DARK & DREAMY -->
   <style>
+    /* Corpo pagina scuro */
     body {
       margin: 0;
       font-family: 'Helvetica Neue', sans-serif;
       background-color: #0f0f14;
       color: #ddd;
     }
+
+    /* Titolo */
     h1 {
       text-align: center;
       font-weight: normal;
       margin-top: 1rem;
     }
+
+    /* Filtro scuro e contrastato sulla mappa */
     #map {
       width: 100%;
       height: 90vh;
       margin-top: 1rem;
+      filter: brightness(0.6) contrast(1.2) saturate(1.1);
+      background-color: #111;
     }
+
+    /* Dropdown container */
     .selector {
       text-align: center;
       margin: 1rem auto;
     }
+
+    /* Select stylizzato */
     select {
       font-size: 1rem;
       padding: 0.5rem;
@@ -34,6 +48,27 @@
       background-color: #1e1e25;
       color: #fff;
       border: 1px solid #333;
+    }
+
+    /* Glow pulsante sui marker (quando userai divIcon .pulsing) */
+    .leaflet-marker-icon.pulsing {
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 16px rgba(255, 220, 180, 0.9);
+    }
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: 0.9; }
+      50%  { transform: scale(1.6); opacity: 0.5; }
+      100% { transform: scale(1);   opacity: 0.9; }
+    }
+
+    /* Flash finale per marker isolati */
+    .flash {
+      animation: flashAnim 1.2s forwards;
+    }
+    @keyframes flashAnim {
+      0%   { transform: scale(1); opacity: 1; }
+      50%  { transform: scale(2); opacity: 0.2; }
+      100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
@@ -50,6 +85,7 @@
   </div>
   <div id="map"></div>
 
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script>
     const map = L.map('map', {
@@ -62,6 +98,7 @@
       worldCopyJump: false
     });
 
+    // Dark tiles di CARTO
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
       subdomains: 'abcd',
@@ -70,9 +107,9 @@
     }).addTo(map);
 
     const points = [
-      { lat: 41.9, lon: 12.5, work: "I SEE YOU", message: "Your echo has been sent." },
-      { lat: 48.8, lon: 2.35, work: "NO SHIELDS", message: "Your echo has been sent." },
-      { lat: 35.7, lon: 139.7, work: "FRAGILE LIGHT", message: "Your echo has been sent." }
+      { lat: 41.9, lon: 12.5, work: "I SEE YOU",    message: "Your echo has been sent." },
+      { lat: 48.8, lon: 2.35, work: "NO SHIELDS",   message: "Your echo has been sent." },
+      { lat: 35.7, lon: 139.7,work: "FRAGILE LIGHT",message: "Your echo has been sent." }
     ];
 
     const markers = [];
@@ -81,27 +118,30 @@
       markers.forEach(m => map.removeLayer(m));
       markers.length = 0;
 
-      points.filter(p => filter === 'all' || p.work === filter).forEach(p => {
-        const marker = L.circleMarker([p.lat, p.lon], {
-          radius: 8,
-          fillColor: "#FFFFFF",
-          color: "#FFFFFF",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.9
-        }).addTo(map);
-
-        marker.on('click', () => {
-          marker.setStyle({
+      points
+        .filter(p => filter === 'all' || p.work === filter)
+        .forEach(p => {
+          const marker = L.circleMarker([p.lat, p.lon], {
+            radius: 8,
             fillColor: "#FFFFFF",
             color: "#FFFFFF",
-            radius: 10
-          });
-          marker.bindPopup(`<b>${p.work}</b><br>${p.message}`).openPopup();
-        });
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.9
+          }).addTo(map);
 
-        markers.push(marker);
-      });
+          marker.on('click', () => {
+            // Effetto di ingrandimento e popup
+            marker.setStyle({
+              fillColor: "#FFFFFF",
+              color: "#FFFFFF",
+              radius: 10
+            });
+            marker.bindPopup(`<b>${p.work}</b><br>${p.message}`).openPopup();
+          });
+
+          markers.push(marker);
+        });
     }
 
     document.getElementById('workSelect').addEventListener('change', function() {
