@@ -32,11 +32,19 @@ overlay.drawTile = canvas => {
 };
 overlay.addTo(map);
 
-// 4) Dati dei punti (come già definito)
+// 4) Dati dei punti con gemelli
 const points = [
-  { lat: 41.9, lon: 12.5,    work: "I SEE YOU",    message: "Your echo has been sent." },
-  { lat: 48.8, lon: 2.35,    work: "NO SHIELDS",   message: "Your echo has been sent." },
-  { lat: 35.7, lon: 139.7,   work: "FRAGILE LIGHT",message: "Your echo has been sent." }
+  // I SEE YOU
+  { lat: 41.9, lon: 12.5, work: "I SEE YOU",    message: "Your echo has been sent." },
+  { lat: 42.1, lon: 12.7, work: "I SEE YOU",    message: "Your echo has been sent." },
+
+  // NO SHIELDS
+  { lat: 48.8, lon: 2.35, work: "NO SHIELDS",   message: "Your echo has been sent." },
+  { lat: 49.0, lon: 2.50, work: "NO SHIELDS",   message: "Your echo has been sent." },
+
+  // FRAGILE LIGHT
+  { lat: 35.7, lon: 139.7, work: "FRAGILE LIGHT", message: "Your echo has been sent." },
+  { lat: 36.0, lon: 140.0, work: "FRAGILE LIGHT", message: "Your echo has been sent." }
 ];
 
 // 5) Array e mappa per raggruppare i marker
@@ -44,7 +52,7 @@ const markers = [];
 const markersByWork = {};
 
 // 6) Funzione per aggiungere i marker in base al filtro
-function addMarkers(filter) {
+targetunction addMarkers(filter) {
   // Rimuovi quelli vecchi
   markers.forEach(m => map.removeLayer(m));
   markers.length = 0;
@@ -108,4 +116,32 @@ function onMarkerClick(e) {
       const t = prog / steps;
       const a = latlngs[0],
             b = latlngs[1];
-      const lat = a
+      const lat = a.lat + t * (b.lat - a.lat);
+      const lng = a.lng + t * (b.lng - a.lng);
+
+      if (animMarker) map.removeLayer(animMarker);
+      animMarker = L.circleMarker([lat, lng], {
+        radius: 5,
+        fillColor: '#ffdca0',
+        fillOpacity: 1,
+        stroke: false
+      }).addTo(map);
+
+      if (prog >= steps) {
+        clearInterval(anim);
+        map.removeLayer(animMarker);
+        map.removeLayer(line);
+      }
+    }, 25);
+  });
+}
+
+// 8) Change listener sul dropdown
+document.getElementById('workSelect')
+  .addEventListener('change', function() {
+    addMarkers(this.value);
+  });
+
+// 9) Inizializza con tutti i gesture
+addMarkers('all');
+
