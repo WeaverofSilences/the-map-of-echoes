@@ -26,7 +26,7 @@ overlay.drawTile = canvas => {
   const ctx = canvas.getContext('2d');
   const grd = ctx.createRadialGradient(128, 128, 0, 128, 128, 200);
   grd.addColorStop(0, 'rgba(30,30,50,0)');
-  grd.addColorStop(1, 'rgba(10,0,20,0.4)');  // opacity ridotta a 0.4
+  grd.addColorStop(1, 'rgba(10,0,20,0.4)');
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, 256, 256);
 };
@@ -37,11 +37,9 @@ const points = [
   // I SEE YOU
   { lat: 41.9, lon: 12.5, work: "I SEE YOU",    message: "Your echo has been sent." },
   { lat: 42.1, lon: 12.7, work: "I SEE YOU",    message: "Your echo has been sent." },
-
   // NO SHIELDS
   { lat: 48.8, lon: 2.35, work: "NO SHIELDS",   message: "Your echo has been sent." },
   { lat: 49.0, lon: 2.50, work: "NO SHIELDS",   message: "Your echo has been sent." },
-
   // FRAGILE LIGHT
   { lat: 35.7, lon: 139.7, work: "FRAGILE LIGHT", message: "Your echo has been sent." },
   { lat: 36.0, lon: 140.0, work: "FRAGILE LIGHT", message: "Your echo has been sent." }
@@ -51,14 +49,14 @@ const points = [
 const markers = [];
 const markersByWork = {};
 
-// 6) Funzione per aggiungere i marker in base al filtro
-targetunction addMarkers(filter) {
+// 6) Funzione per aggiungere i marker
+function addMarkers(filter) {
   // Rimuovi quelli vecchi
   markers.forEach(m => map.removeLayer(m));
   markers.length = 0;
   Object.keys(markersByWork).forEach(k => delete markersByWork[k]);
 
-  // Crea i nuovi
+  // Crea nuovi marker
   points
     .filter(p => filter === 'all' || p.work === filter)
     .forEach(p => {
@@ -71,7 +69,7 @@ targetunction addMarkers(filter) {
         fillOpacity: 0.9
       }).addTo(map);
 
-      // Applica il glow pulsante appena viene aggiunto al DOM
+      // Glow pulsante
       marker.on('add', () => {
         marker.getElement().classList.add('pulsing');
       });
@@ -80,7 +78,7 @@ targetunction addMarkers(filter) {
       markers.push(marker);
       (markersByWork[p.work] = markersByWork[p.work] || []).push(marker);
 
-      // Evento click: scia luminosa o flash
+      // Click: scia luminosa o flash
       marker.on('click', onMarkerClick);
     });
 }
@@ -90,14 +88,14 @@ function onMarkerClick(e) {
   const me = e.target;
   const group = markersByWork[me.work] || [];
 
-  // Se solo un marker per quest’opera: flash
   if (group.length < 2) {
+    // Flash se singolo
     me.getElement().classList.add('flash');
     setTimeout(() => me.getElement().classList.remove('flash'), 1200);
     return;
   }
 
-  // Altrimenti disegna scie verso gli altri marker
+  // Scia luminosa verso gemelli
   group.forEach(other => {
     if (other === me) return;
     const latlngs = [me.getLatLng(), other.getLatLng()];
@@ -107,15 +105,12 @@ function onMarkerClick(e) {
       opacity: 0.7
     }).addTo(map);
 
-    let prog = 0,
-        steps = 40,
-        animMarker;
-
+    let prog = 0, animMarker;
+    const steps = 40;
     const anim = setInterval(() => {
       prog++;
       const t = prog / steps;
-      const a = latlngs[0],
-            b = latlngs[1];
+      const a = latlngs[0], b = latlngs[1];
       const lat = a.lat + t * (b.lat - a.lat);
       const lng = a.lng + t * (b.lng - a.lng);
 
@@ -142,6 +137,5 @@ document.getElementById('workSelect')
     addMarkers(this.value);
   });
 
-// 9) Inizializza con tutti i gesture
+// 9) Mostra tutto all’avvio
 addMarkers('all');
-
